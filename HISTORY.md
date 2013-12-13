@@ -8,6 +8,9 @@ TBA
 * Update to libpng 1.6.7.
 * Added bmx_ prefix.
 
+#### pub.oggvorbis - 1.08
+* Update to libogg-1.3.0 and libvorbis-1.2.3.
+
 #### pub.zlib - 1.03
 * Update to zlib 1.2.8.
 
