@@ -3,10 +3,12 @@ Strict
 
 Module Pub.FreeType
 
-ModuleInfo "Version: 1.08"
+ModuleInfo "Version: 1.09"
 ModuleInfo "License: FreeType License"
 ModuleInfo "Modserver: BRL"
 
+ModuleInfo "History: 1.09"
+ModuleInfo "History: Updated to FreeType 2.5.2"
 ModuleInfo "History: 1.08 Release"
 ModuleInfo "History: Updated to FreeType 2.3.11"
 ModuleInfo "History: 1.07 Release"
@@ -112,7 +114,7 @@ Function FT_Set_Charmap( ft_face:Byte Ptr,charmap )
 
 Function FT_Load_Char( ft_face:Byte Ptr,index,flags )
 Function FT_Load_Glyph( ft_face:Byte Ptr,index,flags )
-Function FT_Render_Glyph( ft_glyph:Byte Ptr,mode )
+Function FT_Render_Glyph( ft_glyph:Byte Ptr,Mode )
 
 End Extern
 
