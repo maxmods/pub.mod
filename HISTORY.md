@@ -9,7 +9,7 @@ TBA
 * Added bmx_ prefix.
 
 #### pub.oggvorbis - 1.08
-* Update to libogg-1.3.0 and libvorbis-1.2.3.
+* Update to libogg-1.3.1 and libvorbis-1.3.4.
 
 #### pub.zlib - 1.03
 * Update to zlib 1.2.8.
