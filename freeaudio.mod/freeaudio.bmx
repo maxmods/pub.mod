@@ -1,12 +1,14 @@
 
 Module Pub.FreeAudio
 
-ModuleInfo "Version: 1.22"
+ModuleInfo "Version: 1.23"
 ModuleInfo "Author: Simon Armstrong"
 ModuleInfo "License: zlib/libpng"
 ModuleInfo "Copyright: Blitz Research Ltd"
 ModuleInfo "Modserver: BRL"
 
+ModuleInfo "History: 1.23"
+ModuleInfo "History: Use ALSA instead of OSS on Linux."
 ModuleInfo "History: 1.22 Release"
 ModuleInfo "History: Fixed leak with sound recycling"
 ModuleInfo "History: 1.21 Release"
@@ -62,12 +64,12 @@ Extern
 Function OpenCoreAudioDevice()
 End Extern
 ?Linux
-'Import "-lasound"
-'Import "alsadevice.cpp"
-Import "ossdevice.cpp"
+Import "-lasound"
+Import "alsadevice.cpp"
+'Import "ossdevice.cpp"
 Extern "C"
-Function OpenOSSDevice()
-'Function OpenALSADevice()
+'Function OpenOSSDevice()
+Function OpenALSADevice()
 End Extern
 ?
 
@@ -112,9 +114,9 @@ Function fa_Init( deviceid )
 ?Linux
 	Select deviceid
 		Case 0
-			device=OpenOSSDevice()
+			device=OpenALSADevice()
 '		Case 1
-'			device=OpenALSADevice()
+'			device=OpenOSSDevice()
 	EndSelect
 ?MacOS
 	device=OpenCoreAudioDevice()

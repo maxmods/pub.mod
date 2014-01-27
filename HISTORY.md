@@ -1,6 +1,9 @@
 ## 1.1.0
 TBA
 
+#### pub.freeaudio - 1.23
+* Use ALSA instead of OSS on Linux.
+
 #### pub.freetype - 1.09
 * Update to FreeType 2.5.2.
 

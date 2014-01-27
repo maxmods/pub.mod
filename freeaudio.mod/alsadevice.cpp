@@ -10,7 +10,7 @@
 #include <sys/soundcard.h>
 #include <pthread.h>
 
-//#include <alsa/asoundlib.h>
+#include <alsa/asoundlib.h>
 
 extern "C" audiodevice *OpenALSADevice();
 
@@ -19,7 +19,7 @@ void *audiothread(void *dev);
 #define LINUXFRAG 2048
 
 struct alsaaudio:audiodevice{
-	pthread_t	audiothread;
+	pthread_t	audiopthread;
 	int			threadid;
 	int			running,playing;
 	short		*buffer;
@@ -35,7 +35,7 @@ struct alsaaudio:audiodevice{
 		buffersize=LINUXFRAG*2;
 		pthread_attr_t	attr;
 		pthread_attr_init(&attr);
-		threadid=pthread_create(&audiothread,&attr,audiothread,(void*)this);	
+		threadid=pthread_create(&audiopthread,&attr,audiothread,(void*)this);	
 		return 0;
 	}
 	
@@ -61,6 +61,7 @@ void *audiothread(void *v){
 	dev=(alsaaudio*)v;
 
 	unsigned int val;
+	
 	snd_pcm_t *fd;
 	snd_pcm_uframes_t periodsize;
 	snd_pcm_hw_params_t *hwparams;
@@ -71,7 +72,7 @@ void *audiothread(void *v){
 	int fragment_count;
 
 	err=snd_pcm_open(&fd, strdup("default"), SND_PCM_STREAM_PLAYBACK, 0);
-	if (err<0) return -1;
+	if (err<0) return v;
 
 	fragment_size=LINUXFRAG;  //overall buffer size
 	fragment_count=2; //2 - 16 fragment count - 2 minimum, the lower it is potentially the lower the latency
@@ -79,16 +80,16 @@ void *audiothread(void *v){
 //configure device
 	if (snd_pcm_hw_params_any(fd, hwparams) < 0) {
 		//printf("linuxaudio failed at params any\n");
-		return -1;
+		return v;
 	}	
 	if (snd_pcm_hw_params_set_access(fd, hwparams,SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
 		//printf("linuxaudio failed at set access\n");
-		return -1;
+		return v;
 	}	
 	
 	if (snd_pcm_hw_params_set_format(fd, hwparams,SND_PCM_FORMAT_S16_LE) < 0) {
 		//printf("linuxaudio failed at set format\n");
-		return -1;
+		return v;
 	}
 	val = 44100;
 	if (snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
@@ -97,29 +98,29 @@ void *audiothread(void *v){
 		val = 48000;
 		if (snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
 			//printf("linuxaudio failed at setting output rate (%d)\n", output_rate);
-			return -1;
+			return v;
 		}
 		dev->mix->freq=val;		
 	}
 	channels=2;
 	if (snd_pcm_hw_params_set_channels(fd, hwparams, channels) < 0) {
 		//printf("linuxaudio failed at set channels (%d)\n", channels);
-		return -1;
+		return v;
 	}
 	periodsize = (fragment_size) / 4; // bytes -> frames for 16-bit,stereo - should be a minimum of 512
 	if (snd_pcm_hw_params_set_period_size_near(fd, hwparams,&periodsize, 0) < 0) {
 		//printf("linuxaudio failed at set period size (%d)\n", (int)periodsize);			
-		return -1;
+		return v;
 	}
 	val = fragment_count;
 	if (snd_pcm_hw_params_set_periods_near(fd, hwparams,&val, 0) < 0) {
 		//printf("linuxaudio failed at set periods (%d)\n", val);			
 		//should attempt a one by one period increase up to 16?
-		return -1;
+		return v;
 	}
 	if (snd_pcm_hw_params(fd, hwparams) < 0) {
 		//printf("linuxaudio failed at installing hw params\n");
-		return -1;
+		return v;
 	}
 	//loop while playing sound
 	dev->playing=1;
