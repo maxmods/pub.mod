@@ -3,6 +3,8 @@ TBA
 
 #### pub.freeaudio - 1.23
 * Use ALSA instead of OSS on Linux.
+* Added PulseAudio driver as default Linux sound driver.
+* ALSA and Pulse audio drivers now link at runtime.
 
 #### pub.freetype - 1.09
 * Update to FreeType 2.5.2.

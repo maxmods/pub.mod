@@ -9,6 +9,8 @@ ModuleInfo "Modserver: BRL"
 
 ModuleInfo "History: 1.23"
 ModuleInfo "History: Use ALSA instead of OSS on Linux."
+ModuleInfo "History: Added PulseAudio driver as default Linux sound driver."
+ModuleInfo "History: ALSA and Pulse audio drivers now link at runtime."
 ModuleInfo "History: 1.22 Release"
 ModuleInfo "History: Fixed leak with sound recycling"
 ModuleInfo "History: 1.21 Release"
@@ -64,12 +66,16 @@ Extern
 Function OpenCoreAudioDevice()
 End Extern
 ?Linux
-Import "-lasound"
+Import "-ldl"
+'Import "-lpulse-simple"
+'Import "-lasound"
 Import "alsadevice.cpp"
+Import "pulseaudiodevice.cpp"
 'Import "ossdevice.cpp"
 Extern "C"
 'Function OpenOSSDevice()
 Function OpenALSADevice()
+Function OpenPulseAudioDevice()
 End Extern
 ?
 
@@ -114,8 +120,10 @@ Function fa_Init( deviceid )
 ?Linux
 	Select deviceid
 		Case 0
+			device=OpenPulseAudioDevice()
+		Case 1
 			device=OpenALSADevice()
-'		Case 1
+'		Case 2
 '			device=OpenOSSDevice()
 	EndSelect
 ?MacOS

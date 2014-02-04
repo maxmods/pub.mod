@@ -14,6 +14,57 @@
 
 extern "C" audiodevice *OpenALSADevice();
 
+
+#include <dlfcn.h>
+
+extern "C" {
+
+static void *_alsa;
+static size_t(*alsa_snd_pcm_hw_params_sizeof)();
+static int(*alsa_snd_pcm_open)(snd_pcm_t **pcm, const char *name, snd_pcm_stream_t stream, int mode);
+static int(*alsa_snd_pcm_hw_params_any)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params);
+static int(*alsa_snd_pcm_hw_params_set_access)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_access_t _access);
+static int(*alsa_snd_pcm_hw_params_set_format)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_format_t val);
+static int(*alsa_snd_pcm_hw_params_set_rate_near)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int *val, int *dir);
+static int(*alsa_snd_pcm_hw_params_set_channels)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int val);
+static int(*alsa_snd_pcm_hw_params_set_period_size_near)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_uframes_t *val, int *dir);
+static int(*alsa_snd_pcm_hw_params_set_periods_near)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int *val, int *dir);
+static int(*alsa_snd_pcm_hw_params)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params);
+static snd_pcm_sframes_t(*alsa_snd_pcm_writei)(snd_pcm_t *pcm, const void *buffer, snd_pcm_uframes_t size);
+static int(*alsa_snd_pcm_prepare)(snd_pcm_t *pcm);
+static int(*alsa_snd_pcm_drop)(snd_pcm_t *pcm);
+static int(*alsa_snd_pcm_close)(snd_pcm_t *pcm);
+
+int LoadALSA(){
+	_alsa = dlopen( "libasound.so.2",RTLD_NOW );
+
+	return _alsa!=0;
+}
+
+void InitALSA(){
+
+	if( !_alsa ) return;
+
+	alsa_snd_pcm_hw_params_sizeof = (size_t (*)())dlsym(_alsa, "snd_pcm_hw_params_sizeof");
+	alsa_snd_pcm_open = (int (*)(snd_pcm_t **pcm, const char *name, snd_pcm_stream_t stream, int mode))dlsym(_alsa, "snd_pcm_open");
+	alsa_snd_pcm_hw_params_any = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params))dlsym(_alsa, "snd_pcm_hw_params_any");
+	alsa_snd_pcm_hw_params_set_access = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_access_t _access))dlsym(_alsa, "snd_pcm_hw_params_set_access");
+	alsa_snd_pcm_hw_params_set_format = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_format_t val))dlsym(_alsa, "snd_pcm_hw_params_set_format");
+	alsa_snd_pcm_hw_params_set_rate_near = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int *val, int *dir))dlsym(_alsa, "snd_pcm_hw_params_set_rate_near");
+	alsa_snd_pcm_hw_params_set_channels = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int val))dlsym(_alsa, "snd_pcm_hw_params_set_channels");
+	alsa_snd_pcm_hw_params_set_period_size_near = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, snd_pcm_uframes_t *val, int *dir))dlsym(_alsa, "snd_pcm_hw_params_set_period_size_near");
+	alsa_snd_pcm_hw_params_set_periods_near = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params, unsigned int *val, int *dir))dlsym(_alsa, "snd_pcm_hw_params_set_periods_near");
+	alsa_snd_pcm_hw_params = (int (*)(snd_pcm_t *pcm, snd_pcm_hw_params_t *params))dlsym(_alsa, "snd_pcm_hw_params");
+	alsa_snd_pcm_writei = (snd_pcm_sframes_t (*)(snd_pcm_t *pcm, const void *buffer, snd_pcm_uframes_t size))dlsym(_alsa, "snd_pcm_writei");
+	alsa_snd_pcm_prepare = (int (*)(snd_pcm_t *pcm))dlsym(_alsa, "snd_pcm_prepare");
+	alsa_snd_pcm_drop = (int (*)(snd_pcm_t *pcm))dlsym(_alsa, "snd_pcm_drop");
+	alsa_snd_pcm_close = (int (*)(snd_pcm_t *pcm))dlsym(_alsa, "snd_pcm_close");
+}
+
+
+
+}
+
 void *audiothread(void *dev);
 
 #define LINUXFRAG 2048
@@ -65,60 +116,61 @@ void *audiothread(void *v){
 	snd_pcm_t *fd;
 	snd_pcm_uframes_t periodsize;
 	snd_pcm_hw_params_t *hwparams;
-	snd_pcm_hw_params_alloca(&hwparams);
+	/*snd_pcm_hw_params_alloca(&hwparams);  expanded definition below... */
+	do { hwparams = (snd_pcm_hw_params_t *) alloca(alsa_snd_pcm_hw_params_sizeof()); memset(hwparams, 0, alsa_snd_pcm_hw_params_sizeof()); } while (0);
 	int output_rate;
 	int channels;
 	int fragment_size;
 	int fragment_count;
 
-	err=snd_pcm_open(&fd, strdup("default"), SND_PCM_STREAM_PLAYBACK, 0);
+	err=alsa_snd_pcm_open(&fd, strdup("default"), SND_PCM_STREAM_PLAYBACK, 0);
 	if (err<0) return v;
 
 	fragment_size=LINUXFRAG;  //overall buffer size
 	fragment_count=2; //2 - 16 fragment count - 2 minimum, the lower it is potentially the lower the latency
 
 //configure device
-	if (snd_pcm_hw_params_any(fd, hwparams) < 0) {
+	if (alsa_snd_pcm_hw_params_any(fd, hwparams) < 0) {
 		//printf("linuxaudio failed at params any\n");
 		return v;
 	}	
-	if (snd_pcm_hw_params_set_access(fd, hwparams,SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
+	if (alsa_snd_pcm_hw_params_set_access(fd, hwparams,SND_PCM_ACCESS_RW_INTERLEAVED) < 0) {
 		//printf("linuxaudio failed at set access\n");
 		return v;
 	}	
 	
-	if (snd_pcm_hw_params_set_format(fd, hwparams,SND_PCM_FORMAT_S16_LE) < 0) {
+	if (alsa_snd_pcm_hw_params_set_format(fd, hwparams,SND_PCM_FORMAT_S16_LE) < 0) {
 		//printf("linuxaudio failed at set format\n");
 		return v;
 	}
 	val = 44100;
-	if (snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
+	if (alsa_snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
 		// Try 48KHZ too 
 		//printf("linuxaudio - %d HZ not available, trying 48000HZ\n", output_rate);
 		val = 48000;
-		if (snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
+		if (alsa_snd_pcm_hw_params_set_rate_near(fd, hwparams,&val, 0) < 0) {
 			//printf("linuxaudio failed at setting output rate (%d)\n", output_rate);
 			return v;
 		}
 		dev->mix->freq=val;		
 	}
 	channels=2;
-	if (snd_pcm_hw_params_set_channels(fd, hwparams, channels) < 0) {
+	if (alsa_snd_pcm_hw_params_set_channels(fd, hwparams, channels) < 0) {
 		//printf("linuxaudio failed at set channels (%d)\n", channels);
 		return v;
 	}
 	periodsize = (fragment_size) / 4; // bytes -> frames for 16-bit,stereo - should be a minimum of 512
-	if (snd_pcm_hw_params_set_period_size_near(fd, hwparams,&periodsize, 0) < 0) {
+	if (alsa_snd_pcm_hw_params_set_period_size_near(fd, hwparams,&periodsize, 0) < 0) {
 		//printf("linuxaudio failed at set period size (%d)\n", (int)periodsize);			
 		return v;
 	}
 	val = fragment_count;
-	if (snd_pcm_hw_params_set_periods_near(fd, hwparams,&val, 0) < 0) {
+	if (alsa_snd_pcm_hw_params_set_periods_near(fd, hwparams,&val, 0) < 0) {
 		//printf("linuxaudio failed at set periods (%d)\n", val);			
 		//should attempt a one by one period increase up to 16?
 		return v;
 	}
-	if (snd_pcm_hw_params(fd, hwparams) < 0) {
+	if (alsa_snd_pcm_hw_params(fd, hwparams) < 0) {
 		//printf("linuxaudio failed at installing hw params\n");
 		return v;
 	}
@@ -127,21 +179,26 @@ void *audiothread(void *v){
 	while (dev->playing)
 	{
 		dev->mix->mix16(dev->buffer);
-		if ((snd_pcm_writei (fd, dev->buffer,LINUXFRAG/2)) < 0) {	//Half buffer for two channels?
+		if ((alsa_snd_pcm_writei (fd, dev->buffer,LINUXFRAG/2)) < 0) {	//Half buffer for two channels?
 			//printf ("linuxaudio warning: buffer underrun occurred\n");
-			if (snd_pcm_prepare(fd) < 0) {
+			if (alsa_snd_pcm_prepare(fd) < 0) {
 				//printf ("linuxaudio failed at preparing pcm\n");
 				dev->playing=0; //die gracefully
 			}
 		}	
 	}
-	snd_pcm_drop(fd);
-	snd_pcm_close (fd);
+	alsa_snd_pcm_drop(fd);
+	alsa_snd_pcm_close (fd);
 	return 0;
 }
 
 audiodevice *OpenALSADevice(){
-	return new alsaaudio();
+	if (LoadALSA()) {
+		InitALSA();
+		return new alsaaudio();
+	}
+	
+	return 0;
 }
 
 #endif
