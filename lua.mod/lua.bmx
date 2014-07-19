@@ -5,12 +5,14 @@ bbdoc: Lua Core
 end rem
 Module Pub.Lua
 
-ModuleInfo "Version: 1.27"
+ModuleInfo "Version: 1.28"
 ModuleInfo "Author: Tecgraf,PUC-Rio"
 ModuleInfo "License: MIT License"
 ModuleInfo "Modserver: BRL"
 ModuleInfo "Credit: Adapted for BlitzMax by Thomas Mayer, Noel Cower, Andreas Rozek and Simon Armstrong"
 
+ModuleInfo "History: 1.28"
+ModuleInfo "History: On Linux we need to link against libdl."
 ModuleInfo "History: 1.27"
 ModuleInfo "History: Modified luaconf.h (line 14) to autodetect LUA_USE_LINUX and LUA_USE_MACOSX"
 ModuleInfo "History: 1.26"
@@ -49,6 +51,10 @@ ModuleInfo "History: Added luaopen_debug and ldblib.c"
 ModuleInfo "History: Replaced byte ptr with $z (CString) where a C string is expected"
 ModuleInfo "History: 1.12 Release"
 ModuleInfo "History: Removed lua.h import"
+
+?linux
+Import "-ldl"
+?
 
 Import "lua-5.1.4/src/lstate.c"
 Import "lua-5.1.4/src/llex.c"

@@ -13,6 +13,9 @@ TBA
 * Update to libpng 1.6.7.
 * Added bmx_ prefix.
 
+#### pub.lua - 1.28
+* On Linux we need to link against libdl.
+
 #### pub.oggvorbis - 1.08
 * Update to libogg-1.3.1 and libvorbis-1.3.4.
 
