@@ -6,6 +6,9 @@ TBA
 * Added PulseAudio driver as default Linux sound driver.
 * ALSA and Pulse audio drivers now link at runtime.
 
+#### pub.freejoy - 1.09
+* Linux devices can be located in various places.
+
 #### pub.freetype - 1.09
 * Update to FreeType 2.5.2.
 
