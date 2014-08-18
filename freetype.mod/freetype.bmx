@@ -9,6 +9,7 @@ ModuleInfo "Modserver: BRL"
 
 ModuleInfo "History: 1.09"
 ModuleInfo "History: Updated to FreeType 2.5.2"
+ModuleInfo "History: Added kerning support."
 ModuleInfo "History: 1.08 Release"
 ModuleInfo "History: Updated to FreeType 2.3.11"
 ModuleInfo "History: 1.07 Release"
@@ -116,6 +117,8 @@ Function FT_Load_Char( ft_face:Byte Ptr,index,flags )
 Function FT_Load_Glyph( ft_face:Byte Ptr,index,flags )
 Function FT_Render_Glyph( ft_glyph:Byte Ptr,Mode )
 
+Function FT_Get_Kerning( ft_face:Byte Ptr, left_glyph:Int, right_glyph:Int, kern_mode:Int, kerning:Byte Ptr)
+
 End Extern
 
 Const FT_LOAD_DEFAULT=0
@@ -139,6 +142,25 @@ Const FT_RENDER_MODE_MONO=2
 Const FT_RENDER_MODE_LCD=3
 Const FT_RENDER_MODE_LCD_V=4
 
+Const FT_FACE_FLAG_SCALABLE:Int = 1 Shl 0
+Const FT_FACE_FLAG_FIXED_SIZES:Int = 1 Shl 1
+Const FT_FACE_FLAG_FIXED_WIDTH:Int = 1 Shl 2
+Const FT_FACE_FLAG_SFNT:Int = 1 Shl 3
+Const FT_FACE_FLAG_HORIZONTAL:Int = 1 Shl 4
+Const FT_FACE_FLAG_VERTICAL:Int = 1 Shl 5
+Const FT_FACE_FLAG_KERNING:Int = 1 Shl 6
+Const FT_FACE_FLAG_FAST_GLYPHS:Int = 1 Shl 7
+Const FT_FACE_FLAG_MULTIPLE_MASTERS:Int = 1 Shl 8
+Const FT_FACE_FLAG_GLYPH_NAMES:Int = 1 Shl 9
+Const FT_FACE_FLAG_EXTERNAL_STREAM:Int = 1 Shl 10
+Const FT_FACE_FLAG_HINTER:Int = 1 Shl 11
+Const FT_FACE_FLAG_CID_KEYED:Int = 1 Shl 12
+Const FT_FACE_FLAG_TRICKY:Int = 1 Shl 13
+Const FT_FACE_FLAG_COLOR:Int = 1 Shl 14
+
+Const FT_KERNING_DEFAULT:Int = 0
+Const FT_KERNING_UNFITTED:Int = 1
+Const FT_KERNING_UNSCALED:Int = 2
 
 Type FTFace
 	Field	numfaces,index,flags,style,numglyphs
@@ -183,4 +205,14 @@ Type FTGlyph
 	Field	numgreys:Short,pixel_mode:Byte,palette_mode:Byte
 	Field	palette:Byte Ptr
 	Field	bitmap_left,bitmap_top
+End Type
+
+Type FTVector
+	Field x:Int
+	Field y:Int
+End Type
+
+Type FTBBox
+	Field xMin:Int, yMin:Int
+    Field xMax:Int, yMax:Int
 End Type

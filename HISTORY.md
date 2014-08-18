@@ -11,6 +11,7 @@ TBA
 
 #### pub.freetype - 1.09
 * Update to FreeType 2.5.2.
+* Added kerning support.
 
 #### pub.libpng - 1.04
 * Update to libpng 1.6.7.
