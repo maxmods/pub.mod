@@ -93,8 +93,12 @@ struct alsaaudio:audiodevice{
 	int close(){	
 		int		timeout;
 		running=0;
-		timeout=5;
-		while (timeout-- && playing) sleep(1);
+		//wait up to 500ms
+		timeout=20;
+		while (timeout-- && playing){
+			//sleep 25ms
+			usleep( 25*1000 );
+		}
 		return 0;
 	}
 };
