@@ -1,12 +1,14 @@
 
 Module Pub.LibPNG
 
-ModuleInfo "Version: 1.04"
+ModuleInfo "Version: 1.05"
 ModuleInfo "Author: Guy Eric Schalnat, Andreas Dilger, Glenn Randers-Pehrson, Others"
 ModuleInfo "License: ZLib/PNG License"
 ModuleInfo "Modserver: BRL"
 ModuleInfo "Credit: Adapted for BlitzMax by Mark Sibly"
 
+ModuleInfo "History: 1.05"
+ModuleInfo "History: Exposed user data."
 ModuleInfo "History: 1.04"
 ModuleInfo "History: Update to libpng 1.6.7"
 ModuleInfo "History: Use bmx_ prefix."
@@ -82,8 +84,8 @@ Function png_create_info_struct( png_ptr ) = "bmx_png_create_info_struct"
 Function png_init_io( png_ptr,c_stream ) = "bmx_png_init_io"
 Function png_set_sig_bytes( png_ptr,number ) = "bmx_png_set_sig_bytes"
 
-Function png_set_read_fn( png_ptr,user:Byte Ptr,read_fn(png_ptr,buf:Byte Ptr,size) ) = "bmx_png_set_read_fn"
-Function png_set_write_fn( png_ptr,user:Byte Ptr,write_fn(png_ptr,buf:Byte Ptr,size),flush_fn(png_ptr) ) = "bmx_png_set_write_fn"
+Function png_set_read_fn( png_ptr,user:Object,read_fn(png_ptr,buf:Byte Ptr,size) ) = "bmx_png_set_read_fn"
+Function png_set_write_fn( png_ptr,user:Object,write_fn(png_ptr,buf:Byte Ptr,size),flush_fn(png_ptr) ) = "bmx_png_set_write_fn"
 
 Function png_set_expand( png_ptr ) = "bmx_png_set_expand"
 Function png_set_strip_16( png_ptr ) = "bmx_png_set_strip_16"
@@ -100,5 +102,7 @@ Function png_set_rows( png_ptr,info_ptr,rows:Byte Ptr ) = "bmx_png_set_rows"
 
 Function png_get_IHDR( png_ptr,info_ptr,width Var,height Var,bit_depth Var,color_type Var,interlace_type Var,compression_type Var,filter_method Var ) = "bmx_png_get_IHDR"
 Function png_set_IHDR( png_ptr,info_ptr,width,height,bit_depth,color_type,interlace_type,compression_type,filter_method ) = "bmx_png_set_IHDR"
+
+Function png_get_io_ptr:Object(png_ptr) = "bmx_png_get_io_ptr"
 
 End Extern
