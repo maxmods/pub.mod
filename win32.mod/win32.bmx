@@ -3,12 +3,14 @@ Strict
 
 Module Pub.Win32
 
-ModuleInfo "Version: 1.15"
+ModuleInfo "Version: 1.16"
 ModuleInfo "Author: Mark Sibly, Simon Armstrong"
 ModuleInfo "License: zlib/libpng"
 ModuleInfo "Copyright: Blitz Research Ltd"
 ModuleInfo "ModServer: BRL"
 
+ModuleInfo "History: 1.16"
+ModuleInfo "History: Added EnableWindowsKeyLock()."
 ModuleInfo "History: 1.15 Release"
 ModuleInfo "History: Added more stuff"
 ModuleInfo "History: 1.14 Release"
@@ -43,4 +45,43 @@ Import "com.bmx"
 Import "commdlg.bmx"
 Import "commctrl.bmx"
 Import "richedit.bmx"
+
+Rem
+bbdoc: Locks the left/right Windows keys, preventing them from opening the Windows menu.
+End Rem
+Function EnableWindowsKeyLock( enable:Int, lw:Int = True, rw:Int = True )
+	lwin = lw
+	rwin = rw
+	If enable Then
+		wkhook = SetWindowsHookExA( 13, KeyboardProc, GetModuleHandleA( Null ), 0 )
+	Else
+		UnhookWindowsHookEx( wkhook ) 
+	End If
+End Function 
+
+Private
+
+Global wkhook:Int 
+Global lwin:Int, rwin:Int
+
+Extern "win32"
+	Function SetWindowsHookExA:Int(idHook:Int, lpfn:Byte Ptr, hMod:Int, threadId:Int)
+End Extern
+
+Function KeyboardProc:Int(code:Int, wp:Int, lp:Int) "win32"
+	If code <= 0 Then
+		CallNextHookEx( wkhook, code, wp, lp )
+	End If
+	
+	Local key:Int = Byte Ptr(lp)[0]
+	
+	If wp = WM_KEYDOWN Or wp = WM_KEYUP Then
+		If (lwin And key = 91) Or (rwin And key = 92) Then
+			Return 1
+		End If
+	End If 
+	
+	Return CallNextHookEx(wkhook, code, wp, lp) 
+End Function
+
 ?
