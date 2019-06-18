@@ -55,15 +55,15 @@ Import "freeaudioglue.cpp"
 Import "dsounddevice.cpp"
 Import "mmdevice.cpp"
 Extern "C"
-Function OpenMultiMediaDevice()
-Function OpenDirectSoundDevice()
+Function OpenMultiMediaDevice:Byte Ptr()
+Function OpenDirectSoundDevice:Byte Ptr()
 End Extern
 ?MacOS
 Import "-framework AudioUnit"
 Import "-framework AudioToolbox"
 Import "coreaudiodevice.cpp"
 Extern
-Function OpenCoreAudioDevice()
+Function OpenCoreAudioDevice:Byte Ptr()
 End Extern
 ?Linux
 Import "-ldl"
@@ -74,8 +74,8 @@ Import "pulseaudiodevice.cpp"
 'Import "ossdevice.cpp"
 Extern "C"
 'Function OpenOSSDevice()
-Function OpenALSADevice()
-Function OpenPulseAudioDevice()
+Function OpenALSADevice:Byte Ptr()
+Function OpenPulseAudioDevice:Byte Ptr()
 End Extern
 ?
 
@@ -88,14 +88,14 @@ Const FA_CHANNELSTATUS_LOOPING=4
 Const FA_CHANNELSTATUS_STREAMING=8
 Const FA_CHANNELSTATUS_PAUSED=16
 
-Function fa_Reset( audiodevice )
+Function fa_Reset( audiodevice:Byte Ptr )
 Function fa_Close()
-Function fa_CreateSound( length,bits,channels,hertz,samples:Byte Ptr=Null,looping=False )
-Function fa_WriteSound( sound,samples:Byte Ptr,length ) 'length really neceesary?
-Function fa_FreeSound( sound )
+Function fa_CreateSound:Byte Ptr( length,bits,channels,hertz,samples:Byte Ptr=Null,looping=False )
+Function fa_WriteSound( sound:Byte Ptr,samples:Byte Ptr,length ) 'length really neceesary?
+Function fa_FreeSound( sound:Byte Ptr )
 Function fa_AllocChannel()
 Function fa_FreeChannel( channel )
-Function fa_PlaySound( sound,paused_flag,channel )
+Function fa_PlaySound( sound:Byte Ptr,paused_flag,channel )
 
 Function fa_StopChannel( channel )
 Function fa_ChannelStatus( channel )
@@ -110,13 +110,14 @@ Function fa_SetChannelDepth( channel,depth# )
 End Extern
 
 Function fa_Init( deviceid )
-	Local device
+	Local device:Byte Ptr
 ?Win32
-	If deviceid
-		device=OpenDirectSoundDevice()
-	Else
-		device=OpenMultiMediaDevice()
-	EndIf
+	Select deviceid
+		Case 0 
+			device=OpenMultiMediaDevice()
+		Case 1
+			device=OpenDirectSoundDevice()
+	EndSelect
 ?Linux
 	Select deviceid
 		Case 0
